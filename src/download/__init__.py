@@ -1,4 +1,4 @@
-"""下载模块初始化"""
+"""Download module"""
 from .manager import DownloadManager
 
 __all__ = ["DownloadManager"]

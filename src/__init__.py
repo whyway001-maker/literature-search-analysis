@@ -1,15 +1,15 @@
 """
-文献自动检索下载分析 - 主入口
+LitLab — Literature Auto Search, Download & Analysis
 
-支持 CNKI（中国知网）和 Google Scholar 的：
-- 文献检索
-- 批量下载
-- 元数据导出
-- AI 分析
+Supports CNKI and Google Scholar for:
+- Literature search
+- Batch download
+- Metadata export
+- AI-driven analysis
 
 Usage:
-    python -m src.search.cnki "关键词"
-    python -m src.download.manager --source cnki --keywords "关键词"
+    python -m src.search.cnki "keywords"
+    python -m src.download.manager --source cnki --keywords "keywords"
     python -m src.analysis.pipeline --input results.json
 """
 

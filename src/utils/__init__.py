@@ -1,4 +1,4 @@
-"""工具模块初始化"""
+"""Utility modules"""
 from .pdf_parser import PDFParser
 from .exporter import Exporter
 

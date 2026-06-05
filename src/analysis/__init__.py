@@ -1,4 +1,4 @@
-"""分析模块初始化"""
+"""Analysis module"""
 from .pipeline import AnalysisPipeline
 
 __all__ = ["AnalysisPipeline"]

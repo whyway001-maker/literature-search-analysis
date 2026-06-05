@@ -1,4 +1,4 @@
-"""检索模块初始化"""
+"""Search module"""
 from .cnki import CNKISearcher, PaperInfo
 from .google_scholar import GoogleScholarSearcher
 

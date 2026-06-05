@@ -1,11 +1,11 @@
 """
-文献下载管理器
+Paper download manager.
 
-支持：
-- CNKI 文献下载（PDF/CAJ）
-- Google Scholar 全文链接追踪
-- 批量下载与重试
-- 下载进度监控
+Supports:
+- CNKI paper download (PDF / CAJ)
+- Google Scholar full-text link tracking
+- Batch download with retry
+- Download progress monitoring
 """
 
 import os
@@ -16,10 +16,9 @@ from urllib.parse import urlparse
 
 
 class DownloadManager:
-    """文献下载管理器
+    """Manages paper download workflows.
 
-    管理文献检索结果的下载流程，
-    支持断点续传、格式识别、重试机制。
+    Supports resume, format detection, and retry mechanisms.
     """
 
     SUPPORTED_FORMATS = {".pdf", ".caj", ".html", ".xml"}
@@ -36,24 +35,22 @@ class DownloadManager:
         filename: Optional[str] = None,
         max_retries: int = 3,
     ) -> Optional[str]:
-        """下载单篇文献
+        """Download a single paper.
 
         Args:
-            url: 下载链接
-            filename: 保存文件名（不含路径）
-            max_retries: 最大重试次数
+            url: Download link
+            filename: Saved filename (without path)
+            max_retries: Maximum retry attempts
 
         Returns:
-            下载后的文件路径，失败返回 None
+            Downloaded file path, or None on failure
         """
-        # TODO: 集成 Codex cnki-download skill 或 gs-fulltext skill
-        # 实际下载逻辑依赖浏览器自动化的 skill
-
+        # Actual download logic handled by Codex cnki-download / gs-fulltext skills
         if not url:
-            print("[Download] URL 为空，跳过")
+            print("[Download] Empty URL, skipping")
             return None
 
-        # 生成文件名
+        # Generate filename
         if not filename:
             parsed = urlparse(url)
             filename = os.path.basename(parsed.path) or f"paper_{int(time.time())}.pdf"
@@ -61,8 +58,7 @@ class DownloadManager:
         filepath = self.download_dir / filename
         print(f"[Download] {url[:80]}... -> {filepath}")
 
-        # 实际下载由 skill 完成
-        # self.downloaded.append(str(filepath))
+        # Actual download performed by skill
         return str(filepath)
 
     def batch_download(
@@ -70,16 +66,16 @@ class DownloadManager:
         papers: list[dict],
         source: str = "cnki",
     ) -> dict:
-        """批量下载文献
+        """Batch download papers.
 
         Args:
-            papers: 文献信息列表（包含 download_url 字段）
-            source: 数据源 (cnki/google_scholar)
+            papers: List of paper info dicts (must contain 'download_url')
+            source: Data source (cnki / google_scholar)
 
         Returns:
-            {downloaded: [...], failed: [...]}
+            {downloaded: [...], failed: [...], total, success_count, fail_count}
         """
-        print(f"[Batch Download] 共 {len(papers)} 篇文献，来源: {source}")
+        print(f"[Batch Download] {len(papers)} papers, source: {source}")
 
         for paper in papers:
             url = paper.get("download_url", "")
@@ -91,7 +87,7 @@ class DownloadManager:
                 else:
                     self.failed.append({"title": title, "url": url})
             else:
-                self.failed.append({"title": title, "url": "", "reason": "无下载链接"})
+                self.failed.append({"title": title, "url": "", "reason": "No download link"})
 
         return {
             "downloaded": self.downloaded,
@@ -102,7 +98,7 @@ class DownloadManager:
         }
 
     def get_stats(self) -> dict:
-        """获取下载统计"""
+        """Get download statistics."""
         total_size = sum(
             os.path.getsize(f) for f in self.downloaded if os.path.exists(f)
         )

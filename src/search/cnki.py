@@ -1,11 +1,11 @@
 """
-CNKI（中国知网）文献检索模块
+CNKI (China National Knowledge Infrastructure) literature search module.
 
-支持：
-- 基础关键词检索
-- 高级检索（多字段组合）
-- 期刊检索
-- 结果解析与元数据提取
+Supports:
+- Basic keyword search
+- Advanced search (multi-field combination)
+- Journal search
+- Result parsing and metadata extraction
 """
 
 import json
@@ -17,7 +17,8 @@ from datetime import datetime
 
 @dataclass
 class PaperInfo:
-    """论文元数据"""
+    """Paper metadata container"""
+
     title: str = ""
     authors: list[str] = field(default_factory=list)
     journal: str = ""
@@ -38,10 +39,10 @@ class PaperInfo:
 
 
 class CNKISearcher:
-    """CNKI 检索引擎
+    """CNKI search engine.
 
-    通过浏览器自动化（Playwright / Chrome DevTools Protocol）与 CNKI 交互。
-    依赖 Codex skill: cnki-search, cnki-advanced-search 等提供底层浏览器操作。
+    Interacts with CNKI via browser automation (Playwright / Chrome DevTools Protocol).
+    Depends on Codex skills: cnki-search, cnki-advanced-search, etc.
     """
 
     BASE_URL = "https://kns.cnki.net/kns8s/search"
@@ -57,27 +58,28 @@ class CNKISearcher:
         year_from: Optional[int] = None,
         year_to: Optional[int] = None,
     ) -> list[PaperInfo]:
-        """基础关键词检索
+        """Basic keyword search.
 
         Args:
-            keywords: 检索关键词（中英文均可）
-            limit: 返回结果数量上限
-            year_from: 起始年份（可选）
-            year_to: 结束年份（可选）
+            keywords: Search keywords (Chinese or English)
+            limit: Max number of results
+            year_from: Start year (optional)
+            year_to: End year (optional)
 
         Returns:
-            论文信息列表
-        """
-        # 实际检索逻辑由 Codex cnki-search skill 执行
-        # 此处为本地数据结构与参数验证
-        if not keywords.strip():
-            raise ValueError("检索关键词不能为空")
+            List of paper metadata
 
-        # TODO: 集成 Codex skill 调用
-        # 结果由 skill 返回后填充到 self.results
-        print(f"[CNKI] 检索关键词: {keywords}, 限制: {limit}")
+        Raises:
+            ValueError: If keywords is empty
+        """
+        if not keywords.strip():
+            raise ValueError("Search keywords cannot be empty")
+
+        # Actual search performed by Codex cnki-search skill
+        # Results are populated into self.results by the skill
+        print(f"[CNKI] Searching: {keywords}, limit: {limit}")
         if year_from or year_to:
-            print(f"[CNKI] 年份筛选: {year_from or '不限'} - {year_to or '不限'}")
+            print(f"[CNKI] Year filter: {year_from or 'any'} - {year_to or 'any'}")
 
         return self.results
 
@@ -90,27 +92,31 @@ class CNKISearcher:
         abstract: Optional[str] = None,
         limit: int = 20,
     ) -> list[PaperInfo]:
-        """高级检索（多字段组合）
+        """Advanced search with multi-field combination.
 
         Args:
-            title: 题名
-            author: 作者
-            journal: 刊名
-            keywords: 关键词
-            abstract: 摘要
-            limit: 结果数量
+            title: Paper title
+            author: Author name
+            journal: Journal name
+            keywords: Keywords
+            abstract: Abstract text
+            limit: Max results
 
         Returns:
-            论文信息列表
-        """
-        fields = {k: v for k, v in locals().items()
-                  if v and k not in ('self', 'limit')}
-        if not fields:
-            raise ValueError("至少填写一个检索字段")
+            List of paper metadata
 
-        # TODO: 集成 Codex cnki-advanced-search skill
+        Raises:
+            ValueError: If no search fields provided
+        """
+        fields = {
+            k: v for k, v in locals().items() if v and k not in ("self", "limit")
+        }
+        if not fields:
+            raise ValueError("At least one search field is required")
+
+        # Uses Codex cnki-advanced-search skill
         query_parts = [f"{k}={v}" for k, v in fields.items()]
-        print(f"[CNKI Advanced] 检索条件: {', '.join(query_parts)}, 限制: {limit}")
+        print(f"[CNKI Advanced] Query: {', '.join(query_parts)}, limit: {limit}")
 
         return self.results
 
@@ -120,18 +126,18 @@ class CNKISearcher:
         year: Optional[int] = None,
         issue: Optional[str] = None,
     ) -> list[PaperInfo]:
-        """期刊目录检索
+        """Search within a specific journal.
 
         Args:
-            journal_name: 期刊名称
-            year: 年份
-            issue: 期号
+            journal_name: Journal name
+            year: Publication year
+            issue: Issue number
 
         Returns:
-            该期刊指定期数的论文列表
+            Papers in the specified journal/issue
         """
-        # TODO: 集成 Codex cnki-journal-search, cnki-journal-toc
-        print(f"[CNKI Journal] 期刊: {journal_name}, 年份: {year}, 期号: {issue}")
+        # Uses Codex cnki-journal-search, cnki-journal-toc
+        print(f"[CNKI Journal] Journal: {journal_name}, year: {year}, issue: {issue}")
         return self.results
 
     def export_results(
@@ -139,14 +145,14 @@ class CNKISearcher:
         format: str = "json",
         filepath: Optional[str] = None,
     ) -> str:
-        """导出检索结果
+        """Export search results.
 
         Args:
-            format: 导出格式 (json/csv/bibtex)
-            filepath: 保存路径（可选）
+            format: Export format (json / csv / bibtex)
+            filepath: Output file path (optional)
 
         Returns:
-            导出内容或文件路径
+            Export content or file path
         """
         data = [r.to_dict() for r in self.results]
         output = ""
@@ -155,6 +161,7 @@ class CNKISearcher:
             output = json.dumps(data, ensure_ascii=False, indent=2)
         elif format == "csv":
             import csv, io
+
             buf = io.StringIO()
             writer = csv.DictWriter(buf, fieldnames=data[0].keys() if data else [])
             writer.writeheader()
@@ -171,7 +178,7 @@ class CNKISearcher:
 
     @staticmethod
     def _to_bibtex(papers: list[dict]) -> str:
-        """转换为 BibTeX 格式"""
+        """Convert results to BibTeX format."""
         entries = []
         for i, p in enumerate(papers):
             key = f"ref{i+1}"
@@ -179,9 +186,9 @@ class CNKISearcher:
             entry += f"  title = {{{p.get('title', '')}}},\n"
             entry += f"  author = {{{' and '.join(p.get('authors', []))}}},\n"
             entry += f"  journal = {{{p.get('journal', '')}}},\n"
-            if p.get('year'):
+            if p.get("year"):
                 entry += f"  year = {{{p['year']}}},\n"
-            if p.get('doi'):
+            if p.get("doi"):
                 entry += f"  doi = {{{p['doi']}}},\n"
             entry += "}\n"
             entries.append(entry)

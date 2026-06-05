@@ -1,12 +1,12 @@
 """
-数据导出工具
+Data export utility.
 
-支持格式：
+Supported formats:
 - BibTeX (.bib)
 - CSV (.csv)
 - JSON (.json)
 - RIS (.ris)
-- Markdown 表格 (.md)
+- Markdown table (.md)
 """
 
 import json
@@ -16,7 +16,7 @@ from typing import Optional
 
 
 class Exporter:
-    """文献元数据导出器"""
+    """Paper metadata exporter."""
 
     FORMATS = ["json", "csv", "bibtex", "ris", "md"]
 
@@ -29,18 +29,21 @@ class Exporter:
         output_path: str,
         format: str = "json",
     ) -> str:
-        """导出文献元数据
+        """Export paper metadata.
 
         Args:
-            papers: 文献数据列表
-            output_path: 输出文件路径
-            format: 导出格式
+            papers: Paper data list
+            output_path: Output file path
+            format: Export format (json / csv / bibtex / md)
 
         Returns:
-            输出文件路径
+            Output file path
+
+        Raises:
+            ValueError: If format is unsupported
         """
         if format not in self.FORMATS:
-            raise ValueError(f"不支持的格式: {format}，支持: {self.FORMATS}")
+            raise ValueError(f"Unsupported format: {format}. Supported: {self.FORMATS}")
 
         exporter = {
             "json": self._to_json,
@@ -52,40 +55,45 @@ class Exporter:
         content = exporter(papers)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(content)
-        print(f"[Export] {len(papers)} 条记录 -> {output_path} ({format})")
+        print(f"[Export] {len(papers)} records -> {output_path} ({format})")
         return output_path
 
-    def _to_json(self, papers: list[dict]) -> str:
+    @staticmethod
+    def _to_json(papers: list[dict]) -> str:
         return json.dumps(papers, ensure_ascii=False, indent=2)
 
-    def _to_csv(self, papers: list[dict]) -> str:
+    @staticmethod
+    def _to_csv(papers: list[dict]) -> str:
         if not papers:
             return ""
         import io
+
         buf = io.StringIO()
         writer = csv.DictWriter(buf, fieldnames=papers[0].keys())
         writer.writeheader()
         writer.writerows(papers)
         return buf.getvalue()
 
-    def _to_bibtex(self, papers: list[dict]) -> str:
+    @staticmethod
+    def _to_bibtex(papers: list[dict]) -> str:
         entries = []
         for i, p in enumerate(papers):
             key = f"ref{i+1}"
             entry = f"@article{{{key},\n"
             entry += f"  title = {{{p.get('title', '')}}},\n"
-            authors = ' and '.join(p.get('authors', []))
+            authors = " and ".join(p.get("authors", []))
             entry += f"  author = {{{authors}}},\n"
             entry += f"  journal = {{{p.get('journal', '')}}},\n"
-            if p.get('year'):
+            if p.get("year"):
                 entry += f"  year = {{{p['year']}}},\n"
-            if p.get('doi'):
+            if p.get("doi"):
                 entry += f"  doi = {{{p['doi']}}},\n"
             entry += "}\n"
             entries.append(entry)
         return "\n".join(entries)
 
-    def _to_markdown(self, papers: list[dict]) -> str:
+    @staticmethod
+    def _to_markdown(papers: list[dict]) -> str:
         if not papers:
             return ""
         headers = list(papers[0].keys())

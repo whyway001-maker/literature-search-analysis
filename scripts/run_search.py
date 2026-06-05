@@ -1,8 +1,8 @@
 """
-文献检索、下载、分析 — 快速启动脚本
+Literature search, download, analysis — one-click launcher.
 
 Usage:
-    python scripts/run_search.py --source cnki --keywords "动力电池回收"
+    python scripts/run_search.py --source cnki --keywords "battery recycling"
     python scripts/run_search.py --source gs --keywords "reverse logistics"
 """
 import argparse
@@ -16,14 +16,23 @@ from src.search.google_scholar import GoogleScholarSearcher
 
 
 def main():
-    parser = argparse.ArgumentParser(description="文献检索工具")
-    parser.add_argument("--source", choices=["cnki", "gs"], required=True, help="检索来源")
-    parser.add_argument("--keywords", required=True, help="检索关键词")
-    parser.add_argument("--limit", type=int, default=20, help="结果数量上限")
-    parser.add_argument("--year-from", type=int, help="起始年份")
-    parser.add_argument("--year-to", type=int, help="结束年份")
-    parser.add_argument("--export", choices=["json", "csv", "bibtex"], default="json", help="导出格式")
-    parser.add_argument("--output", help="输出文件路径")
+    parser = argparse.ArgumentParser(
+        description="Literature search tool — CNKI & Google Scholar"
+    )
+    parser.add_argument(
+        "--source", choices=["cnki", "gs"], required=True, help="Search source"
+    )
+    parser.add_argument("--keywords", required=True, help="Search keywords")
+    parser.add_argument("--limit", type=int, default=20, help="Max results")
+    parser.add_argument("--year-from", type=int, help="Start year")
+    parser.add_argument("--year-to", type=int, help="End year")
+    parser.add_argument(
+        "--export",
+        choices=["json", "csv", "bibtex"],
+        default="json",
+        help="Export format",
+    )
+    parser.add_argument("--output", help="Output file path")
 
     args = parser.parse_args()
 
@@ -47,7 +56,7 @@ def main():
     if args.output:
         print(searcher.export_results(format=args.export, filepath=args.output))
     else:
-        print(f"\n检索完成: {len(results)} 条结果")
+        print(f"\nSearch complete: {len(results)} results")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-CNKI 检索模块测试
+Tests for CNKI search module.
 """
 import sys
 from pathlib import Path
@@ -11,29 +11,29 @@ from src.search.cnki import CNKISearcher, PaperInfo
 
 
 def test_paper_info_creation():
-    """测试 PaperInfo 数据类"""
+    """Test PaperInfo dataclass."""
     paper = PaperInfo(
-        title="闭环供应链协调机制研究",
-        authors=["张三", "李四"],
-        journal="中国管理科学",
+        title="Closed-Loop Supply Chain Coordination",
+        authors=["Zhang San", "Li Si"],
+        journal="Chinese Journal of Management Science",
         year=2024,
-        keywords=["闭环供应链", "协调机制"],
+        keywords=["closed-loop supply chain", "coordination"],
     )
     d = paper.to_dict()
-    assert d["title"] == "闭环供应链协调机制研究"
+    assert d["title"] == "Closed-Loop Supply Chain Coordination"
     assert len(d["authors"]) == 2
     assert d["source_db"] == "cnki"
 
 
 def test_cnki_searcher_init():
-    """测试 CNKI 检索器初始化"""
+    """Test CNKI searcher initialization."""
     searcher = CNKISearcher()
     assert searcher.results == []
     assert searcher.total_count == 0
 
 
 def test_empty_keywords_raises():
-    """测试空关键词抛出异常"""
+    """Test that empty keywords raise ValueError."""
     searcher = CNKISearcher()
     try:
         searcher.search("")
@@ -43,7 +43,7 @@ def test_empty_keywords_raises():
 
 
 def test_export_empty_json():
-    """测试导出空结果为 JSON"""
+    """Test exporting empty results as JSON."""
     searcher = CNKISearcher()
     result = searcher.export_results(format="json")
     assert result == "[]"

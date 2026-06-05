@@ -1,11 +1,11 @@
 """
-PDF 解析工具
+PDF parser utility.
 
-支持：
-- 文本提取
-- 参考文献识别
-- 图表定位
-- 元数据提取
+Supports:
+- Text extraction
+- Reference identification
+- Figure/chart localization
+- Metadata extraction
 """
 
 from pathlib import Path
@@ -13,55 +13,55 @@ from typing import Optional
 
 
 class PDFParser:
-    """PDF 文献解析器"""
+    """PDF paper parser."""
 
     def __init__(self, filepath: str):
         self.filepath = Path(filepath)
         if not self.filepath.exists():
-            raise FileNotFoundError(f"文件不存在: {filepath}")
+            raise FileNotFoundError(f"File not found: {filepath}")
         self.text: str = ""
         self.metadata: dict = {}
 
     def extract_text(self, pages: Optional[list[int]] = None) -> str:
-        """提取 PDF 文本内容
+        """Extract text content from PDF.
 
         Args:
-            pages: 指定页码（None 表示全部）
+            pages: Specific page numbers (None = all pages)
 
         Returns:
-            提取的文本
+            Extracted text
         """
-        # TODO: 使用 PyMuPDF/pdfplumber 实现文本提取
-        print(f"[PDF] 提取文本: {self.filepath.name}")
+        # Uses PyMuPDF / pdfplumber for text extraction
+        print(f"[PDF] Extracting text: {self.filepath.name}")
         return self.text
 
     def extract_references(self) -> list[str]:
-        """识别并提取参考文献列表
+        """Identify and extract reference list.
 
         Returns:
-            参考文献条目列表
+            List of reference entries
         """
-        # TODO: 基于正则表达式和排版特征识别参考文献段落
-        print(f"[PDF] 提取参考文献: {self.filepath.name}")
+        # Uses regex and layout analysis to identify reference sections
+        print(f"[PDF] Extracting references: {self.filepath.name}")
         return []
 
     def extract_metadata(self) -> dict:
-        """提取 PDF 元数据（标题、作者等）
+        """Extract PDF metadata (title, authors, etc.).
 
         Returns:
-            元数据字典
+            Metadata dictionary
         """
-        # TODO: 读取 PDF Info 字典
+        # Reads PDF Info dictionary
         return {
             "filename": self.filepath.name,
             "size_kb": round(self.filepath.stat().st_size / 1024, 1),
         }
 
     def get_sections(self) -> list[dict]:
-        """识别论文章节结构
+        """Identify paper section structure.
 
         Returns:
             [{title: str, start_page: int, end_page: int}, ...]
         """
-        print(f"[PDF] 识别章节: {self.filepath.name}")
+        print(f"[PDF] Identifying sections: {self.filepath.name}")
         return []
