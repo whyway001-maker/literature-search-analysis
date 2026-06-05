@@ -31,6 +31,9 @@ bibtexparser>=1.4.0
 # 浏览器自动化
 playwright-stealth>=1.0.6
 
+# 测试
+pytest>=7.4.0
+
 # 工具
 tqdm>=4.66.0
 loguru>=0.7.0
