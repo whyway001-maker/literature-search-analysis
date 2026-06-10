@@ -7,7 +7,7 @@ dist/
 build/
 .eggs/
 
-# 虚拟环境
+# Virtual environments
 venv/
 .venv/
 env/
@@ -18,23 +18,25 @@ env/
 *.swp
 *.swo
 
-# 数据文件
+# Data files
 data/raw/*
 data/processed/*
+data/downloads/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/downloads/.gitkeep
 
-# 输出文件
+# Output files
 outputs/figures/*
 outputs/tables/*
 !outputs/figures/.gitkeep
 !outputs/tables/.gitkeep
 
-# 论文稿件
+# Manuscript drafts
 paper/*.pdf
 paper/*.docx
 
-# 环境变量
+# Environment variables
 .env
 .env.local
 
@@ -42,7 +44,7 @@ paper/*.docx
 .DS_Store
 Thumbs.db
 
-# 日志
+# Logs
 *.log
 logs/
 

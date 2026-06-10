@@ -1,5 +1,4 @@
-"""
-CNKI (China National Knowledge Infrastructure) literature search module.
+"""CNKI (China National Knowledge Infrastructure) literature search module.
 
 Supports:
 - Basic keyword search
@@ -8,11 +7,13 @@ Supports:
 - Result parsing and metadata extraction
 """
 
-import json
-import re
-from dataclasses import dataclass, field, asdict
+from __future__ import annotations
+
+import argparse
+from dataclasses import asdict, dataclass, field
 from typing import Optional
-from datetime import datetime
+
+from src.utils.exporter import Exporter
 
 
 @dataclass
@@ -74,6 +75,7 @@ class CNKISearcher:
         """
         if not keywords.strip():
             raise ValueError("Search keywords cannot be empty")
+        self._validate_search_options(limit, year_from, year_to)
 
         # Actual search performed by Codex cnki-search skill
         # Results are populated into self.results by the skill
@@ -108,6 +110,8 @@ class CNKISearcher:
         Raises:
             ValueError: If no search fields provided
         """
+        if limit < 1:
+            raise ValueError("limit must be at least 1")
         fields = {
             k: v for k, v in locals().items() if v and k not in ("self", "limit")
         }
@@ -136,6 +140,9 @@ class CNKISearcher:
         Returns:
             Papers in the specified journal/issue
         """
+        if not journal_name.strip():
+            raise ValueError("journal_name cannot be empty")
+
         # Uses Codex cnki-journal-search, cnki-journal-toc
         print(f"[CNKI Journal] Journal: {journal_name}, year: {year}, issue: {issue}")
         return self.results
@@ -155,41 +162,56 @@ class CNKISearcher:
             Export content or file path
         """
         data = [r.to_dict() for r in self.results]
-        output = ""
-
-        if format == "json":
-            output = json.dumps(data, ensure_ascii=False, indent=2)
-        elif format == "csv":
-            import csv, io
-
-            buf = io.StringIO()
-            writer = csv.DictWriter(buf, fieldnames=data[0].keys() if data else [])
-            writer.writeheader()
-            writer.writerows(data)
-            output = buf.getvalue()
-        elif format == "bibtex":
-            output = self._to_bibtex(data)
-
+        exporter = Exporter()
         if filepath:
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(output)
-            return filepath
-        return output
+            return exporter.export(data, filepath, format=format)
+        return exporter.render(data, format=format)
 
     @staticmethod
     def _to_bibtex(papers: list[dict]) -> str:
         """Convert results to BibTeX format."""
-        entries = []
-        for i, p in enumerate(papers):
-            key = f"ref{i+1}"
-            entry = "@article{" + key + ",\n"
-            entry += f"  title = {{{p.get('title', '')}}},\n"
-            entry += f"  author = {{{' and '.join(p.get('authors', []))}}},\n"
-            entry += f"  journal = {{{p.get('journal', '')}}},\n"
-            if p.get("year"):
-                entry += f"  year = {{{p['year']}}},\n"
-            if p.get("doi"):
-                entry += f"  doi = {{{p['doi']}}},\n"
-            entry += "}\n"
-            entries.append(entry)
-        return "\n".join(entries)
+        return Exporter._to_bibtex(papers)
+
+    @staticmethod
+    def _validate_search_options(
+        limit: int,
+        year_from: Optional[int],
+        year_to: Optional[int],
+    ) -> None:
+        if limit < 1:
+            raise ValueError("limit must be at least 1")
+        if year_from is not None and year_to is not None and year_from > year_to:
+            raise ValueError("year_from cannot be greater than year_to")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="CNKI literature search")
+    parser.add_argument("keywords", help="Search keywords")
+    parser.add_argument("--limit", type=int, default=20, help="Max results")
+    parser.add_argument("--year-from", type=int, help="Start year")
+    parser.add_argument("--year-to", type=int, help="End year")
+    parser.add_argument(
+        "--export",
+        choices=["json", "csv", "bibtex", "ris", "md"],
+        default="json",
+        help="Export format",
+    )
+    parser.add_argument("--output", help="Output file path")
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    searcher = CNKISearcher()
+    searcher.search(
+        keywords=args.keywords,
+        limit=args.limit,
+        year_from=args.year_from,
+        year_to=args.year_to,
+    )
+    result = searcher.export_results(format=args.export, filepath=args.output)
+    print(result)
+
+
+if __name__ == "__main__":
+    main()

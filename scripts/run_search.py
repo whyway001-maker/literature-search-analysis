@@ -1,10 +1,10 @@
-"""
-Literature search, download, analysis — one-click launcher.
+"""One-click literature search launcher.
 
-Usage:
+Examples:
     python scripts/run_search.py --source cnki --keywords "battery recycling"
-    python scripts/run_search.py --source gs --keywords "reverse logistics"
+    python scripts/run_search.py --source gs --keywords "reverse logistics" --export csv
 """
+
 import argparse
 import sys
 from pathlib import Path
@@ -15,9 +15,9 @@ from src.search.cnki import CNKISearcher
 from src.search.google_scholar import GoogleScholarSearcher
 
 
-def main():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Literature search tool — CNKI & Google Scholar"
+        description="Literature search tool for CNKI and Google Scholar"
     )
     parser.add_argument(
         "--source", choices=["cnki", "gs"], required=True, help="Search source"
@@ -28,35 +28,31 @@ def main():
     parser.add_argument("--year-to", type=int, help="End year")
     parser.add_argument(
         "--export",
-        choices=["json", "csv", "bibtex"],
+        choices=["json", "csv", "bibtex", "ris", "md"],
         default="json",
         help="Export format",
     )
     parser.add_argument("--output", help="Output file path")
+    return parser
 
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
 
-    if args.source == "cnki":
-        searcher = CNKISearcher()
-        results = searcher.search(
-            keywords=args.keywords,
-            limit=args.limit,
-            year_from=args.year_from,
-            year_to=args.year_to,
-        )
-    else:
-        searcher = GoogleScholarSearcher()
-        results = searcher.search(
-            keywords=args.keywords,
-            limit=args.limit,
-            year_from=args.year_from,
-            year_to=args.year_to,
-        )
+    searcher = CNKISearcher() if args.source == "cnki" else GoogleScholarSearcher()
+    results = searcher.search(
+        keywords=args.keywords,
+        limit=args.limit,
+        year_from=args.year_from,
+        year_to=args.year_to,
+    )
 
+    exported = searcher.export_results(format=args.export, filepath=args.output)
     if args.output:
-        print(searcher.export_results(format=args.export, filepath=args.output))
+        print(f"Search complete: {len(results)} results written to {exported}")
     else:
-        print(f"\nSearch complete: {len(results)} results")
+        print(exported)
 
 
 if __name__ == "__main__":

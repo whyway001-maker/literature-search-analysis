@@ -1,25 +1,11 @@
-"""
-LitLab — Literature Auto Search, Download & Analysis
+"""LitLab - Literature Auto Search, Download, and Analysis.
 
-Supports CNKI and Google Scholar for:
-- Literature search
-- Batch download
-- Metadata export
-- AI-driven analysis
-
-Usage:
-    python -m src.search.cnki "keywords"
-    python -m src.download.manager --source cnki --keywords "keywords"
-    python -m src.analysis.pipeline --input results.json
+Supports CNKI and Google Scholar workflows for literature search, batch
+download, metadata export, and lightweight analysis.
 """
 
 __version__ = "0.1.0"
 __author__ = "whyway001-maker"
-
-from src.search.cnki import CNKISearcher
-from src.search.google_scholar import GoogleScholarSearcher
-from src.download.manager import DownloadManager
-from src.analysis.pipeline import AnalysisPipeline
 
 __all__ = [
     "CNKISearcher",
@@ -27,3 +13,23 @@ __all__ = [
     "DownloadManager",
     "AnalysisPipeline",
 ]
+
+
+def __getattr__(name: str):
+    if name == "CNKISearcher":
+        from src.search.cnki import CNKISearcher
+
+        return CNKISearcher
+    if name == "GoogleScholarSearcher":
+        from src.search.google_scholar import GoogleScholarSearcher
+
+        return GoogleScholarSearcher
+    if name == "DownloadManager":
+        from src.download.manager import DownloadManager
+
+        return DownloadManager
+    if name == "AnalysisPipeline":
+        from src.analysis.pipeline import AnalysisPipeline
+
+        return AnalysisPipeline
+    raise AttributeError(f"module 'src' has no attribute {name!r}")
